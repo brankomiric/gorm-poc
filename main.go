@@ -4,12 +4,14 @@ import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 type Book struct {
 	gorm.Model
+	ID             uuid.UUID `sql:"type:uuid;primary_key"`
 	Title          string    `db:"title"`
 	ISBN           string    `db:"isbn"`
 	FirstPublished time.Time `db:"first_published"`
@@ -18,9 +20,10 @@ type Book struct {
 
 type Author struct {
 	gorm.Model
-	Name       string `db:"name"`
-	ZodiacSign string `db:"zodiac_sign"`
-	Books      []Book `gorm:"many2many:book_author;"`
+	ID         uuid.UUID `sql:"type:uuid;primary_key"`
+	Name       string    `db:"name"`
+	ZodiacSign string    `db:"zodiac_sign"`
+	Books      []Book    `gorm:"many2many:book_author;"`
 }
 
 func main() {
@@ -36,14 +39,14 @@ func main() {
 
 	// many2many insert example
 	// datePublished, _ := time.Parse("2006-01-02", "1979-01-01")
-	// ghostStory := Book{Title: "Ghost Story", ISBN: "0-698-10959-7", FirstPublished: datePublished}
+	// ghostStory := Book{ID: uuid.New(), Title: "Ghost Story", ISBN: "0-698-10959-7", FirstPublished: datePublished}
 
 	// db.Create(&ghostStory)
-	// log.Printf("Insered item id: %d\n", ghostStory.ID)
+	// log.Printf("Insered item id: %s\n", ghostStory.ID)
 
-	// author := Author{Name: "Peter Straub", ZodiacSign: "Pisces", Books: []Book{ghostStory}}
+	// author := Author{ID: uuid.New(), Name: "Peter Straub", ZodiacSign: "Pisces", Books: []Book{ghostStory}}
 	// db.Create(&author)
-	// log.Printf("Insered item id: %d\n", author.ID)
+	// log.Printf("Insered item id: %s\n", author.ID)
 
 	// many2many query example
 	var book Book
