@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	gormLog "gorm.io/gorm/logger"
 )
 
 type Book struct {
@@ -14,6 +15,7 @@ type Book struct {
 	ID             uuid.UUID `sql:"type:uuid;primary_key"`
 	Title          string    `db:"title"`
 	ISBN           string    `db:"isbn"`
+	Genre          string    `db:"genre"`
 	FirstPublished time.Time `db:"first_published"`
 	Authors        []Author  `gorm:"many2many:book_author;"`
 }
@@ -28,14 +30,14 @@ type Author struct {
 
 func main() {
 	dsn := "host=localhost user=postgres password=postgres dbname=playground port=5432 sslmode=disable"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: gormLog.Default.LogMode(gormLog.Info)})
 
 	if err != nil {
 		log.Fatal("Ouw woes!")
 	}
 
-	db.AutoMigrate(&Book{})
-	db.AutoMigrate(&Author{})
+	// db.AutoMigrate(&Book{})
+	// db.AutoMigrate(&Author{})
 
 	// many2many insert example
 	// datePublished, _ := time.Parse("2006-01-02", "1979-01-01")
@@ -49,13 +51,20 @@ func main() {
 	// log.Printf("Insered item id: %s\n", author.ID)
 
 	// many2many query example
-	var book Book
-	err = db.Model(&Book{Title: "Ghost Story"}).Preload("Authors").Find(&book).Error
-	if err != nil {
-		log.Println("Ouw woes again!")
-	}
+	// var book Book
+	// err = db.Model(&Book{Title: "Ghost Story"}).Preload("Authors").Find(&book).Error
+	// if err != nil {
+	// 	log.Println("Ouw woes again!")
+	// }
 
-	log.Println(book.ISBN)
-	log.Println(book.Authors[0].Name)
+	// log.Println(book.ISBN)
+	// log.Println(book.Authors[0].Name)
+
+	// find and update
+	// db.Model(&Book{}).Where("title = ?", "Ghost Story").Update("genre", "horror")
+
+	book := Book{Title: "Ghost Story"}
+	db.First(&book)
+	log.Println(book)
 	log.Println("...and out")
 }
