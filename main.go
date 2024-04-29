@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/google/uuid"
+	rx "github.com/reactivex/rxgo/v2"
 	"gorm.io/driver/postgres"
+	_ "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormLog "gorm.io/gorm/logger"
 )
@@ -63,8 +67,18 @@ func main() {
 	// find and update
 	// db.Model(&Book{}).Where("title = ?", "Ghost Story").Update("genre", "horror")
 
-	book := Book{Title: "Ghost Story"}
-	db.First(&book)
-	log.Println(book)
-	log.Println("...and out")
+	var books []Book
+	db.Find(&books)
+	obs := rx.Just(books)()
+	obs = obs.Filter(func(i interface{}) bool {
+		book := i.(Book)
+		return book.Genre == "Horror"
+	}).Map(func(_ context.Context, i interface{}) (interface{}, error) {
+		book := i.(Book)
+		return book.Title, nil
+	})
+	for res := range obs.Observe() {
+		fmt.Println(res.V)
+	}
+
 }
